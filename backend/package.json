@@ -2,6 +2,9 @@
   "name": "portfolio-backend",
   "version": "1.0.0",
   "main": "server.js",
+  "engines": {
+    "node": "18.17.0"
+  },
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js",
@@ -14,18 +17,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@tinymce/tinymce-react": "^5.1.1",
-    "bcrypt": "^5.1.1",
-    "bcryptjs": "^2.4.3",
-    "cloudinary": "^1.26.0",
-    "concurrently": "^8.2.2",
-    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.17.1",
-    "express-validator": "^7.0.1",
+    "mongoose": "^6.0.0",
+    "cors": "^2.8.5",
+    "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^6.10.0",
-    "multer": "^1.4.2",
-    "nodemon": "^3.0.3"
+    "cloudinary": "^1.26.0",
+    "@tinymce/tinymce-react": "^5.1.1"
   }
 }

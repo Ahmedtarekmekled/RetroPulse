@@ -1,8 +1,17 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+
+// Only load dotenv in development
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    require('dotenv').config({ path: path.join(__dirname, '.env') });
+  } catch (err) {
+    console.log('Warning: No .env file found');
+  }
+}
+
 const authRoutes = require('./routes/auth');
 const blogRoutes = require('./routes/blog');
 const projectRoutes = require('./routes/projects');
@@ -13,6 +22,7 @@ const socialRoutes = require('./routes/social');
 const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Add this near the top of your file
 const logError = (error) => {
@@ -56,7 +66,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Start server first, then connect to MongoDB
-const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

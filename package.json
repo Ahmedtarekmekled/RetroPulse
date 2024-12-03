@@ -5,10 +5,17 @@
     "node": "18.17.0"
   },
   "scripts": {
-    "start": "node backend/server.js",
-    "build": "cd frontend && npm install && npm run build",
-    "deploy": "cd backend && npm install && npm start",
-    "postinstall": "npm run build",
-    "db:migrate": "node backend/scripts/migrate.js"
+    "start": "cd backend && npm install && node server.js",
+    "build": "cd frontend && npm install && npm run build && cd ../backend && npm install",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.17.1",
+    "mongoose": "^6.0.0",
+    "cors": "^2.8.5",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^8.5.1",
+    "cloudinary": "^1.26.0"
   }
 }
