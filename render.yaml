@@ -3,8 +3,11 @@ services:
     name: portfolio-mern
     env: node
     region: frankfurt
-    buildCommand: npm run build
-    startCommand: npm start
+    buildCommand: |
+      npm install
+      cd frontend && npm install && npm run build
+      cd ../backend && rm -rf node_modules && npm install
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
