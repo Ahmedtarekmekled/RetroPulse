@@ -18,7 +18,6 @@ function Blog() {
   const fetchPosts = async () => {
     try {
       const response = await api.get('/api/blog');
-      console.log('Fetched posts:', response.data);
       setPosts(response.data);
     } catch (error) {
       console.error('Error fetching posts:', error);

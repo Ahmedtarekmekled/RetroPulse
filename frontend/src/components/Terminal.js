@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/axios';
 import '../styles/terminal.css';
 
 function Terminal() {
@@ -10,7 +9,7 @@ function Terminal() {
   const [output, setOutput] = useState([]);
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [avatar, setAvatar] = useState(() => {
+  const [avatar] = useState(() => {
     return localStorage.getItem('terminalAvatar') || '🤖';
   });
   const [theme, setTheme] = useState(() => {
@@ -23,12 +22,16 @@ function Terminal() {
 
   // Initialize terminal
   useEffect(() => {
-    try {
-      addSystemMessage();
-      document.addEventListener('keydown', handleGlobalKeyPress);
-    } catch (error) {
-      console.error('Error initializing terminal:', error);
-    }
+    const initializeTerminal = () => {
+      try {
+        addSystemMessage();
+        document.addEventListener('keydown', handleGlobalKeyPress);
+      } catch (error) {
+        console.error('Error initializing terminal:', error);
+      }
+    };
+
+    initializeTerminal();
 
     return () => {
       document.removeEventListener('keydown', handleGlobalKeyPress);

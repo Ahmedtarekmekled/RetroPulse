@@ -40,14 +40,12 @@ function UserManagement() {
       setError('');
       setSuccess('');
 
-      // Validate form data
       if (!formData.username || !formData.email || !formData.password) {
         setError('All fields are required');
         return;
       }
 
-      // Create user
-      const response = await api.post('/api/auth/register', formData);
+      await api.post('/api/auth/register', formData);
       
       setSuccess('User created successfully!');
       setFormData({
@@ -57,7 +55,6 @@ function UserManagement() {
         role: 'user'
       });
       
-      // Refresh users list
       fetchUsers();
     } catch (error) {
       setError(error.response?.data?.message || 'Error creating user');

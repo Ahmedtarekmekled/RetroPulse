@@ -7,24 +7,22 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',
-    'plugin:react/jsx-runtime',
     'plugin:react-hooks/recommended',
   ],
   parserOptions: {
     ecmaFeatures: {
       jsx: true,
     },
-    ecmaVersion: 'latest',
+    ecmaVersion: 12,
     sourceType: 'module',
   },
   plugins: ['react'],
   rules: {
-    'react/react-in-jsx-scope': 'off',
-    'react/prop-types': 'off',
+    'no-console': ['warn', { allow: ['error', 'warn'] }],
     'no-unused-vars': 'warn',
     'react-hooks/exhaustive-deps': 'warn',
-    'no-undef': 'error',
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'react/prop-types': 'off',
+    'react/react-in-jsx-scope': 'off',
   },
   settings: {
     react: {
