@@ -14,13 +14,32 @@ const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 
-// Set strictQuery to true
-mongoose.set('strictQuery', true);
+// Add health check endpoint before other routes
+app.get('/api/health', (req, res) => {
+  const healthcheck = {
+    uptime: process.uptime(),
+    message: 'OK',
+    timestamp: Date.now()
+  };
+  try {
+    // Check MongoDB connection
+    if (mongoose.connection.readyState === 1) {
+      healthcheck.database = 'Connected';
+    } else {
+      healthcheck.database = 'Not Connected';
+      return res.status(503).json(healthcheck);
+    }
+    res.status(200).json(healthcheck);
+  } catch (error) {
+    healthcheck.message = error;
+    res.status(503).json(healthcheck);
+  }
+});
 
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? 'https://your-railway-app-url.railway.app'
+    ? process.env.FRONTEND_URL
     : 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -59,29 +78,45 @@ const connectDB = async () => {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
+      keepAlive: true,
+      keepAliveInitialDelay: 300000
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    return conn;
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    process.exit(1);
+    return null;
   }
 };
 
-// Connect to MongoDB before starting the server
-connectDB().then(() => {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
-}).catch(err => {
-  console.error('Failed to connect to MongoDB:', err);
-  process.exit(1);
-});
+// Start server only after DB connection
+const startServer = async () => {
+  const conn = await connectDB();
+  if (conn) {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } else {
+    // Retry connection after delay
+    setTimeout(startServer, 5000);
+  }
+};
+
+startServer();
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  res.status(500).json({ 
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });

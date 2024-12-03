@@ -8,8 +8,7 @@
     "start": "node backend/server.js",
     "build": "cd frontend && npm install && npm run build",
     "deploy": "cd backend && npm install && npm start",
-    "railway:build": "npm install && cd frontend && npm install && npm run build",
-    "railway:dev": "railway run npm run dev",
-    "railway:start": "railway run npm start"
+    "db:migrate": "echo 'No migrations to run'",
+    "postinstall": "npm run build"
   }
 }
