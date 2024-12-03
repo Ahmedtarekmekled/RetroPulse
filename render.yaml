@@ -2,8 +2,8 @@ services:
   - type: web
     name: portfolio-mern
     env: node
-    region: frankfurt  # Choose your region
-    buildCommand: npm install && cd frontend && npm install && npm run build
+    region: frankfurt
+    buildCommand: npm install && cd frontend && npm install && npm run build && cd ../backend && npm install
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
@@ -18,4 +18,4 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-    autoDeploy: true 
+    autoDeploy: true
