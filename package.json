@@ -8,7 +8,6 @@
     "start": "node backend/server.js",
     "build": "cd frontend && npm install && npm run build",
     "deploy": "cd backend && npm install && npm start",
-    "db:migrate": "echo 'No migrations to run'",
     "postinstall": "npm run build"
   }
 }

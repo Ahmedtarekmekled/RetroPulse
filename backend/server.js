@@ -14,33 +14,23 @@ const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 
-// Add health check endpoint before other routes
+// Add this near the top of your file
+const logError = (error) => {
+  console.error('Error:', {
+    message: error.message,
+    stack: error.stack,
+    timestamp: new Date().toISOString()
+  });
+};
+
+// Basic health check endpoint (add this first, before any middleware)
 app.get('/api/health', (req, res) => {
-  const healthcheck = {
-    uptime: process.uptime(),
-    message: 'OK',
-    timestamp: Date.now()
-  };
-  try {
-    // Check MongoDB connection
-    if (mongoose.connection.readyState === 1) {
-      healthcheck.database = 'Connected';
-    } else {
-      healthcheck.database = 'Not Connected';
-      return res.status(503).json(healthcheck);
-    }
-    res.status(200).json(healthcheck);
-  } catch (error) {
-    healthcheck.message = error;
-    res.status(503).json(healthcheck);
-  }
+  res.status(200).json({ status: 'ok' });
 });
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL
-    : 'http://localhost:3000',
+  origin: '*', // Allow all origins in production temporarily
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -57,66 +47,57 @@ app.use('/api/about', aboutRoutes);
 app.use('/api/social', socialRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-// Add this near your other routes
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
-
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
-  // Serve frontend build files
   app.use(express.static(path.join(__dirname, '../frontend/build')));
-
   app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../frontend/build', 'index.html'));
   });
 }
 
-// MongoDB Connection with proper error handling
+// Start server first, then connect to MongoDB
+const PORT = process.env.PORT || 5000;
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+// MongoDB Connection
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+    await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
-      keepAlive: true,
-      keepAliveInitialDelay: 300000
     });
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-    return conn;
+    console.log('MongoDB Connected');
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    return null;
+    // Don't exit process on failed connection
   }
 };
 
-// Start server only after DB connection
-const startServer = async () => {
-  const conn = await connectDB();
-  if (conn) {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } else {
-    // Retry connection after delay
-    setTimeout(startServer, 5000);
-  }
-};
+connectDB();
 
-startServer();
-
-// Error handling middleware
+// Error handling
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logError(err);
   res.status(500).json({ 
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+// Handle server shutdown
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM. Performing graceful shutdown...');
+  server.close(() => {
+    console.log('Server closed. Exiting process...');
+    process.exit(0);
+  });
+});
+
+// Add this after your health check route
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Test endpoint working' });
 });

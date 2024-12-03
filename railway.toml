@@ -5,9 +5,11 @@ buildCommand = "npm install && cd frontend && npm install && npm run build"
 [deploy]
 startCommand = "cd backend && npm start"
 healthcheckPath = "/api/health"
-healthcheckTimeout = 300
+healthcheckTimeout = 180
 restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 3
+restartPolicyMaxRetries = 5
+healthcheckInterval = 15
 
 [deploy.envs]
-NODE_ENV = "production" 
+NODE_ENV = "production"
+PORT = "8080" 
