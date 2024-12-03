@@ -25,4 +25,5 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
+    healthCheckPath: /api/health
     autoDeploy: true
