@@ -5,8 +5,9 @@
     "node": "18.17.0"
   },
   "scripts": {
-    "start": "cd backend && npm install && node server.js",
-    "build": "cd frontend && npm install && npm run build && cd ../backend && npm install",
-    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install"
+    "start": "cd backend && node server.js",
+    "build": "cd frontend && npm install && npm run build",
+    "install-backend": "cd backend && npm install",
+    "install-frontend": "cd frontend && npm install"
   }
 }
