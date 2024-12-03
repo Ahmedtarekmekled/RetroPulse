@@ -4,19 +4,17 @@ services:
     env: node
     region: frankfurt
     buildCommand: |
-      echo "Installing backend dependencies..."
-      cd backend && npm install --production
-      echo "Installing frontend dependencies and building..."
-      cd ../frontend && npm install && npm run build
-      echo "Build completed"
-    startCommand: cd backend && node server.js
+      npm install
+      cd frontend && npm install && npm run build
+      cd ../backend && rm -rf node_modules package-lock.json && npm install
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 3000
+        value: 10000
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
