@@ -1,0 +1,420 @@
+/* Terminal Base Styles */
+.terminal-window {
+    font-family: 'Fira Code', monospace;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+    backdrop-filter: blur(5px);
+    position: fixed;
+    bottom: 60px;
+    right: 16px;
+    width: min(90vw, 24rem);
+    height: min(80vh, 32rem);
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid #22c55e;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+  }
+  
+  .terminal-content {
+    scrollbar-width: thin;
+    scrollbar-color: #22c55e #000;
+    overflow-y: auto;
+    padding: 20px;
+    max-height: 90%;
+  }
+  
+  /* Terminal Themes */
+  .terminal-window.retro {
+    background: rgba(40, 20, 20, 0.95);
+    border-color: #ff6b6b;
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.2);
+  }
+  
+  .terminal-window.matrix {
+    background: rgba(0, 0, 0, 0.9);
+    border-color: #22c55e;
+  }
+  
+  .terminal-window.cyber {
+    background: rgba(20, 20, 40, 0.95);
+    border-color: #00ffff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+  }
+  
+  /* Avatar Animations */
+  .terminal-avatar {
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+  
+  /* Button Styles */
+  .cyber-button {
+    border-color: #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+  }
+  
+  .retro-button {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.2);
+  }
+  
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes glitch {
+    0% {
+      transform: translate(0);
+    }
+    20% {
+      transform: translate(-2px, 2px);
+    }
+    40% {
+      transform: translate(-2px, -2px);
+    }
+    60% {
+      transform: translate(2px, 2px);
+    }
+    80% {
+      transform: translate(2px, -2px);
+    }
+    100% {
+      transform: translate(0);
+    }
+  }
+  
+  /* Message Types */
+  .terminal-line.error {
+    color: #ff4444;
+    animation: glitch 0.3s infinite;
+  }
+  
+  .terminal-line.success {
+    color: #22c55e;
+  }
+  
+  .terminal-line.info {
+    color: #00ffff;
+  }
+  
+  .terminal-line.special {
+    color: #ffff00;
+  }
+  
+  .terminal-line.system {
+    color: #ff00ff;
+  }
+  
+  /* Typing Animation */
+  .typing::after {
+    content: '_';
+    animation: blink 1s infinite;
+  }
+  
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  
+  /* Interactive Elements */
+  .terminal-link {
+    color: #22c55e;
+    text-decoration: none;
+    position: relative;
+  }
+  
+  .terminal-link::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: #22c55e;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+  
+  .terminal-link:hover::after {
+    transform: scaleX(1);
+  }
+  
+  /* Custom Cursor */
+  .terminal-content {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2322c55e"><text y="16">_</text></svg>') 8 8, auto;
+  }
+  
+  /* Sound Toggle */
+  .sound-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+  }
+  
+  .sound-toggle:hover {
+    opacity: 1;
+  }
+  
+  /* Terminal Header and Controls */
+  .terminal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: rgba(34, 197, 94, 0.1);
+    border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+  }
+  
+  .terminal-title {
+    color: #22c55e;
+    font-size: 14px;
+    animation: glitch 1s linear infinite;
+  }
+  
+  .terminal-controls {
+    display: flex;
+    gap: 6px;
+  }
+  
+  .minimize-button,
+  .close-button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  
+  .minimize-button {
+    background: #ffd700;
+  }
+  
+  .close-button {
+    background: #ff4444;
+  }
+  
+  .minimize-button:hover,
+  .close-button:hover {
+    opacity: 0.8;
+  }
+  
+  /* Terminal Input */
+  .terminal-input {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(34, 197, 94, 0.2);
+  }
+  
+  .terminal-prompt {
+    color: #22c55e;
+    margin: 0 8px;
+  }
+  
+  .terminal-input-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #22c55e;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    outline: none;
+  }
+  
+  .terminal-input-field::placeholder {
+    color: rgba(34, 197, 94, 0.5);
+  }
+  
+  .terminal-button {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid #22c55e;
+    color: #22c55e;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    font-family: 'Fira Code', monospace;
+  }
+  
+  .terminal-button:hover {
+    background: #22c55e;
+    color: black;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  }
+  
+  /* Matrix Mode Effect */
+  .matrix-mode {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .matrix-mode::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.8) 0%,
+      rgba(0, 32, 0, 0.8) 50%,
+      rgba(0, 0, 0, 0.8) 100%
+    );
+    z-index: 1000;
+    pointer-events: none;
+    animation: matrixPulse 2s infinite;
+  }
+  
+  @keyframes matrixPulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.5; }
+  }
+  
+  /* Enhanced Terminal Effects */
+  .terminal-line {
+    position: relative;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.3s ease forwards;
+  }
+  
+  .terminal-line.glitch {
+    animation: textGlitch 0.3s infinite;
+  }
+  
+  @keyframes textGlitch {
+    0% {
+      transform: translate(0);
+      text-shadow: 0 0 #0f0;
+    }
+    20% {
+      transform: translate(-2px, 2px);
+      text-shadow: 2px -2px #ff00ff;
+    }
+    40% {
+      transform: translate(2px, -2px);
+      text-shadow: -2px 2px #00ffff;
+    }
+    60% {
+      transform: translate(-2px, -2px);
+      text-shadow: 2px 2px #ff00ff;
+    }
+    80% {
+      transform: translate(2px, 2px);
+      text-shadow: -2px -2px #00ffff;
+    }
+    100% {
+      transform: translate(0);
+      text-shadow: 0 0 #0f0;
+    }
+  }
+  
+  /* Sound visualization effect */
+  .sound-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #22c55e;
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  
+  .sound-active .sound-wave {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  
+  /* Add responsive styles */
+  @media (max-width: 768px) {
+    .terminal-window {
+      width: 90vw !important;
+      height: 70vh !important;
+      font-size: 14px;
+    }
+
+    .terminal-input-field {
+      font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+  }
+
+  /* Prevent zoom on input focus for mobile */
+  @media (max-width: 768px) {
+    input[type="text"],
+    input[type="password"],
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Improve terminal button visibility */
+  .terminal-button {
+    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+    transform: scale(1);
+    transition: transform 0.2s ease;
+  }
+
+  .terminal-button:hover {
+    transform: scale(1.1);
+  }
+
+  /* Add smooth transitions */
+  .terminal-window {
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  .terminal-window.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Improve scrolling */
+  .terminal-content {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  

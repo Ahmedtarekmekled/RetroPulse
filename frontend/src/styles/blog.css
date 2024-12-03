@@ -1,0 +1,42 @@
+.blog-post {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+.blog-post:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.2);
+}
+
+.blog-post img {
+  transition: all 0.5s ease;
+}
+
+.blog-post:hover img {
+  transform: scale(1.05);
+  filter: none;
+}
+
+.blog-post .read-more {
+  position: relative;
+  overflow: hidden;
+}
+
+.blog-post .read-more::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #22c55e;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+
+.blog-post:hover .read-more::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}

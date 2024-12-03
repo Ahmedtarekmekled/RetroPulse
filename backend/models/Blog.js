@@ -1,0 +1,92 @@
+const mongoose = require('mongoose');
+
+const blogSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  slug: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  description: {
+    type: String,
+    required: true,
+    maxLength: 160 // Optimal meta description length
+  },
+  content: {
+    type: String,
+    required: true
+  },
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  image: {
+    url: String,
+    publicId: String,
+    alt: String // Alt text for SEO
+  },
+  tags: [String],
+  category: String,
+  readTime: Number,
+  views: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  lastVisited: {
+    type: Date,
+    default: Date.now
+  },
+  isPublished: {
+    type: Boolean,
+    default: true
+  },
+  canonicalUrl: String,
+  schema: {
+    type: Object,
+    default: function() {
+      return {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": this.title,
+        "image": this.image?.url,
+        "author": {
+          "@type": "Person",
+          "name": "Ahmed Mekled"
+        },
+        "datePublished": this.createdAt,
+        "dateModified": this.updatedAt
+      };
+    }
+  }
+}, { 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Generate slug before saving
+blogSchema.pre('save', function(next) {
+  if (!this.slug || this.isModified('title')) {
+    this.slug = this.title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  }
+  next();
+});
+
+// Add method to increment views
+blogSchema.methods.incrementViews = async function() {
+  this.views = (this.views || 0) + 1;
+  this.lastVisited = new Date();
+  return this.save();
+};
+
+module.exports = mongoose.model('Blog', blogSchema); 
