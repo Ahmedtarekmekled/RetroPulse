@@ -19,8 +19,10 @@ mongoose.set('strictQuery', true);
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: process.env.NODE_ENV === 'production' 
+    ? 'https://your-railway-app-url.railway.app'
+    : 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
@@ -36,12 +38,29 @@ app.use('/api/about', aboutRoutes);
 app.use('/api/social', socialRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
+// Add this near your other routes
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  // Serve frontend build files
+  app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../frontend/build', 'index.html'));
+  });
+}
+
 // MongoDB Connection with proper error handling
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
