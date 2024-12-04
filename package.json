@@ -5,8 +5,12 @@
     "node": "18.17.0"
   },
   "scripts": {
-    "start": "cd backend && node server.js",
-    "build": "cd frontend && npm install --legacy-peer-deps && npm run build && cd ../backend && npm install",
-    "postinstall": "cd backend && npm install"
+    "install:frontend": "cd frontend && npm install --legacy-peer-deps",
+    "install:backend": "cd backend && npm install",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "start:backend": "cd backend && npm start",
+    "build": "npm run install:frontend && npm run build:frontend && npm run install:backend",
+    "start": "npm run start:backend"
   }
 }
