@@ -3,6 +3,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+// Set strictQuery to false
+mongoose.set('strictQuery', false);
+
 // Only load dotenv in development
 if (process.env.NODE_ENV !== 'production') {
   try {
@@ -73,7 +76,17 @@ const server = app.listen(PORT, () => {
 // MongoDB Connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
+    // Ensure MONGODB_URI starts with mongodb:// or mongodb+srv://
+    const mongoURI = process.env.MONGODB_URI;
+    if (!mongoURI) {
+      throw new Error('MONGODB_URI is not defined in environment variables');
+    }
+    
+    if (!mongoURI.startsWith('mongodb://') && !mongoURI.startsWith('mongodb+srv://')) {
+      throw new Error('Invalid MongoDB URI format. URI must start with mongodb:// or mongodb+srv://');
+    }
+
+    await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000,
@@ -81,7 +94,11 @@ const connectDB = async () => {
     });
     console.log('MongoDB Connected');
   } catch (error) {
-    console.error('MongoDB connection error:', error);
+    console.error('MongoDB connection error:', error.message);
+    // Log additional details for debugging
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Full error:', error);
+    }
     // Don't exit process on failed connection
   }
 };
