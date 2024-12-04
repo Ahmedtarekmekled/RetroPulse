@@ -4,7 +4,6 @@ import { Helmet } from 'react-helmet-async';
 import api from '../utils/axios';
 import DynamicText from './DynamicText';
 import HackerBackground from './HackerBackground';
-import BlogEditor from './Editor';
 
 function BlogPost() {
   const { slug } = useParams();
@@ -14,7 +13,7 @@ function BlogPost() {
   const [error, setError] = useState(null);
   const [socialLinks, setSocialLinks] = useState([]);
   const [notificationPermission, setNotificationPermission] = useState(false);
-  const [content, setContent] = useState(post?.content || '');
+  const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
 
   // Check notification permission
@@ -88,6 +87,12 @@ function BlogPost() {
     fetchPost();
   }, [slug, navigate]);
 
+  useEffect(() => {
+    if (post?.content) {
+      setContent(post.content);
+    }
+  }, [post]);
+
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -119,14 +124,23 @@ The blog post link has been copied to your clipboard.
       setSaving(true);
       const response = await api.put(`/api/blog/${post._id}`, {
         ...post,
-        content
+        content: content
       });
 
       if (setPost) {
         setPost(response.data);
       }
+      
+      setMessage({
+        type: 'success',
+        content: 'Post updated successfully!'
+      });
     } catch (error) {
       console.error('Error saving post:', error);
+      setMessage({
+        type: 'error',
+        content: 'Failed to update post'
+      });
     } finally {
       setSaving(false);
     }
@@ -217,11 +231,15 @@ The blog post link has been copied to your clipboard.
             </header>
 
             <div className="space-y-4">
-              <BlogEditor
-                value={content}
-                onChange={(newContent) => setContent(newContent)}
-              />
-              
+              <div className="relative">
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full min-h-[400px] bg-black text-green-500 border border-green-500 p-4 font-mono resize-y focus:outline-none focus:border-green-400"
+                  placeholder="Write your post content here..."
+                />
+              </div>
+
               <div className="flex justify-end">
                 <button
                   onClick={handleSave}
@@ -230,7 +248,7 @@ The blog post link has been copied to your clipboard.
                     saving ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {saving ? 'Saving...' : 'Save Changes_'}
                 </button>
               </div>
 
@@ -238,9 +256,10 @@ The blog post link has been copied to your clipboard.
               <div className="mt-8 border-t border-green-500 pt-4">
                 <h3 className="text-lg font-semibold mb-4">Preview:</h3>
                 <div 
-                  className="prose prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: content }}
-                />
+                  className="prose prose-invert max-w-none font-mono whitespace-pre-wrap"
+                >
+                  {content}
+                </div>
               </div>
             </div>
 
