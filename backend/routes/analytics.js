@@ -2,65 +2,72 @@ const express = require('express');
 const router = express.Router();
 const Visit = require('../models/Visit');
 const auth = require('../middleware/auth');
-const generateCSV = require('../utils/generateCSV');
 
-// Get visit statistics
-router.get('/stats', auth, async (req, res) => {
+// Get analytics overview
+router.get('/overview', auth, async (req, res) => {
   try {
-    const { startDate, endDate, groupBy = 'day' } = req.query;
-    const query = {};
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    if (startDate && endDate) {
-      query.startTime = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)
-      };
-    }
-
-    // Group visits by specified interval
-    const groupByFormat = {
-      day: { $dateToString: { format: '%Y-%m-%d', date: '$startTime' } },
-      week: { $dateToString: { format: '%Y-W%V', date: '$startTime' } },
-      month: { $dateToString: { format: '%Y-%m', date: '$startTime' } }
-    };
-
-    const stats = await Visit.aggregate([
-      { $match: query },
-      {
-        $group: {
-          _id: groupByFormat[groupBy],
-          count: { $sum: 1 },
-          avgDuration: { $avg: '$duration' },
-          bounceRate: {
-            $avg: { $cond: [{ $eq: ['$bounced', true] }, 1, 0] }
-          }
-        }
-      },
-      { $sort: { _id: 1 } }
-    ]);
-
-    // Get top pages
-    const topPages = await Visit.aggregate([
-      { $match: query },
-      {
-        $group: {
+    const [
+      totalVisits,
+      todayVisits,
+      monthlyVisits,
+      lastMonthVisits,
+      topPages,
+      recentVisits,
+      bounceRate,
+      avgDuration
+    ] = await Promise.all([
+      Visit.countDocuments(),
+      Visit.countDocuments({ startTime: { $gte: today } }),
+      Visit.countDocuments({ startTime: { $gte: thisMonth } }),
+      Visit.countDocuments({ 
+        startTime: { 
+          $gte: lastMonth,
+          $lt: thisMonth 
+        } 
+      }),
+      Visit.aggregate([
+        { $group: { 
           _id: '$page',
           count: { $sum: 1 },
+          bounceRate: { $avg: { $cond: ['$bounced', 1, 0] } }
+        }},
+        { $sort: { count: -1 } },
+        { $limit: 10 }
+      ]),
+      Visit.find()
+        .sort('-startTime')
+        .limit(20)
+        .select('page visitor startTime duration'),
+      Visit.aggregate([
+        { $group: {
+          _id: null,
+          bounceRate: { $avg: { $cond: ['$bounced', 1, 0] } }
+        }}
+      ]),
+      Visit.aggregate([
+        { $group: {
+          _id: null,
           avgDuration: { $avg: '$duration' }
-        }
-      },
-      { $sort: { count: -1 } },
-      { $limit: 10 }
+        }}
+      ])
     ]);
 
     res.json({
-      stats,
+      overview: {
+        total: totalVisits,
+        today: todayVisits,
+        thisMonth: monthlyVisits,
+        monthlyGrowth: ((monthlyVisits - lastMonthVisits) / lastMonthVisits) * 100,
+        bounceRate: bounceRate[0]?.bounceRate || 0,
+        avgDuration: avgDuration[0]?.avgDuration || 0
+      },
       topPages,
-      summary: {
-        total: stats.reduce((sum, stat) => sum + stat.count, 0),
-        avgDuration: stats.reduce((sum, stat) => sum + stat.avgDuration, 0) / stats.length,
-        bounceRate: stats.reduce((sum, stat) => sum + stat.bounceRate, 0) / stats.length
-      }
+      recentVisits
     });
   } catch (error) {
     console.error('Error fetching analytics:', error);
@@ -68,31 +75,59 @@ router.get('/stats', auth, async (req, res) => {
   }
 });
 
-// Export visit data
-router.get('/export', auth, async (req, res) => {
+// Get visits by date range
+router.get('/visits', auth, async (req, res) => {
   try {
-    const { format = 'csv', startDate, endDate } = req.query;
+    const { start, end, groupBy = 'day' } = req.query;
     const query = {};
 
-    if (startDate && endDate) {
+    if (start && end) {
       query.startTime = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)
+        $gte: new Date(start),
+        $lte: new Date(end)
       };
     }
 
-    const visits = await Visit.find(query)
-      .sort('-startTime')
-      .lean();
+    const format = {
+      hour: { $dateToString: { format: '%Y-%m-%d %H:00', date: '$startTime' } },
+      day: { $dateToString: { format: '%Y-%m-%d', date: '$startTime' } },
+      week: { $dateToString: { format: '%Y-W%V', date: '$startTime' } },
+      month: { $dateToString: { format: '%Y-%m', date: '$startTime' } }
+    };
 
-    if (format === 'csv') {
-      const csv = generateCSV(visits);
-      res.header('Content-Type', 'text/csv');
-      res.attachment('visit-history.csv');
-      return res.send(csv);
-    }
+    const visits = await Visit.aggregate([
+      { $match: query },
+      { $group: {
+        _id: format[groupBy],
+        count: { $sum: 1 },
+        bounces: { $sum: { $cond: ['$bounced', 1, 0] } },
+        totalDuration: { $sum: '$duration' }
+      }},
+      { $sort: { _id: 1 } }
+    ]);
 
     res.json(visits);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get visitor locations
+router.get('/locations', auth, async (req, res) => {
+  try {
+    const locations = await Visit.aggregate([
+      { $group: {
+        _id: {
+          country: '$visitor.country',
+          city: '$visitor.city'
+        },
+        count: { $sum: 1 }
+      }},
+      { $sort: { count: -1 } },
+      { $limit: 20 }
+    ]);
+
+    res.json(locations);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

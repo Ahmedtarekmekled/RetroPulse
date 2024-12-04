@@ -148,3 +148,8 @@ process.on('SIGTERM', () => {
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Test endpoint working' });
 });
+
+const visitTracker = require('./middleware/visitTracker');
+
+// Add after your other middleware
+app.use(visitTracker);

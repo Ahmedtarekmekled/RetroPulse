@@ -8,7 +8,9 @@ const visitSchema = new mongoose.Schema({
   visitor: {
     ip: String,
     userAgent: String,
-    referrer: String
+    referrer: String,
+    country: String,
+    city: String
   },
   duration: {
     type: Number,
@@ -21,7 +23,7 @@ const visitSchema = new mongoose.Schema({
   endTime: Date,
   bounced: {
     type: Boolean,
-    default: false
+    default: true
   },
   path: String,
   query: Object
