@@ -87,7 +87,7 @@ Available commands:
     }),
 
     home: () => {
-      navigate('/');
+      handleNavigation('/');
       return {
         type: 'success',
         content: 'Navigating to home page...',
@@ -97,7 +97,7 @@ Available commands:
     },
 
     about: () => {
-      navigate('/about');
+      handleNavigation('/about');
       return {
         type: 'success',
         content: 'Navigating to about page...',
@@ -107,7 +107,7 @@ Available commands:
     },
 
     projects: () => {
-      navigate('/projects');
+      handleNavigation('/projects');
       return {
         type: 'success',
         content: 'Loading projects...',
@@ -117,7 +117,7 @@ Available commands:
     },
 
     blog: () => {
-      navigate('/blog');
+      handleNavigation('/blog');
       return {
         type: 'success',
         content: 'Opening blog...',
@@ -127,7 +127,7 @@ Available commands:
     },
 
     contact: () => {
-      navigate('/contact');
+      handleNavigation('/contact');
       return {
         type: 'success',
         content: 'Opening contact page...',
@@ -295,48 +295,39 @@ Try the 'matrix' command for a surprise...
   };
 
   // Update handleCommand function
-  const handleCommand = async (cmd) => {
+  const handleCommand = (command) => {
     try {
-      const trimmedCmd = cmd.trim().toLowerCase();
-      const [command, ...args] = trimmedCmd.split(' ');
-      
-      const newOutput = {
-        type: 'command',
-        content: `${avatar} > ${cmd}`,
-        avatar,
-        animate: true
-      };
-
-      setCommandHistory(prev => [cmd, ...prev]);
-      setHistoryIndex(-1);
-
-      if (commands[command]) {
-        const result = await commands[command](...args);
+      const cmd = commands[command.toLowerCase()];
+      if (cmd) {
+        const result = cmd();
         if (result) {
-          setOutput(prev => [...prev, newOutput, result]);
+          setOutput(prev => [...prev, {
+            type: 'command',
+            content: `> ${command}`,
+            avatar
+          }, result]);
         }
-      } else if (trimmedCmd) {
-        setOutput(prev => [...prev, newOutput, {
+        // Add this: If it's a navigation command, minimize after a short delay
+        if (['home', 'about', 'blog', 'projects', 'contact'].includes(command.toLowerCase())) {
+          setTimeout(() => {
+            setIsMinimized(true);
+          }, 1000); // Delay to show the success message before minimizing
+        }
+        setCommandHistory(prev => [command, ...prev]);
+        setHistoryIndex(-1);
+      } else {
+        setOutput(prev => [...prev, {
           type: 'error',
-          content: `Command not found: ${trimmedCmd}\nType 'help' for available commands.`,
-          avatar,
-          animate: true
+          content: `Command not found: ${command}`,
+          avatar
         }]);
       }
-
-      // Auto-scroll to bottom
-      setTimeout(() => {
-        if (outputRef.current) {
-          outputRef.current.scrollTop = outputRef.current.scrollHeight;
-        }
-      }, 0);
     } catch (error) {
       console.error('Error executing command:', error);
       setOutput(prev => [...prev, {
         type: 'error',
         content: 'An error occurred while executing the command.',
-        avatar,
-        animate: true
+        avatar
       }]);
     }
   };
@@ -413,6 +404,12 @@ Try the 'matrix' command for a surprise...
     if (!isOpen) {
       setIsMinimized(false); // Reset minimized state when opening
     }
+  };
+
+  // Navigation handler
+  const handleNavigation = (path) => {
+    setIsMinimized(true); // Minimize before navigation
+    navigate(path);
   };
 
   return (
