@@ -12,5 +12,8 @@
     "start:backend": "cd backend && npm start",
     "build": "npm run install:frontend && npm run build:frontend && npm run install:backend",
     "start": "npm run start:backend"
+  },
+  "overrides": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }
