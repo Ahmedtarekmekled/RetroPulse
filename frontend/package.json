@@ -4,7 +4,7 @@
   "proxy": "http://localhost:5000",
   "scripts": {
     "start": "react-scripts start",
-    "build": "DISABLE_ESLINT_PLUGIN=true CI=false GENERATE_SOURCEMAP=false react-scripts build",
+    "build": "npm install --save-dev @babel/plugin-proposal-private-property-in-object && DISABLE_ESLINT_PLUGIN=true CI=false GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -30,10 +30,7 @@
     "@babel/plugin-transform-private-property-in-object": "^7.23.4",
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-react": "^7.23.9",
-    "babel-preset-react-app": "^10.0.1",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react": "^7.34.0",
-    "eslint-plugin-react-hooks": "^4.6.0"
+    "babel-preset-react-app": "^10.0.1"
   },
   "overrides": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
