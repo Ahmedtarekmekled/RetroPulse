@@ -191,15 +191,14 @@ router.patch('/:id/views', async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    // Use the increment method
-    await post.incrementViews();
-    
-    // Fetch the updated post
-    const updatedPost = await Blog.findById(req.params.id).lean();
+    // Update views without validation
+    post.views = (post.views || 0) + 1;
+    post.lastVisited = new Date();
+    await post.save({ validateBeforeSave: false });
     
     res.json({ 
-      views: updatedPost.views,
-      lastVisited: updatedPost.lastVisited 
+      views: post.views,
+      lastVisited: post.lastVisited 
     });
   } catch (error) {
     console.error('Error updating views:', error);
