@@ -5,7 +5,9 @@ services:
     region: frankfurt
     buildCommand: |
       npm install
-      cd frontend && npm install --legacy-peer-deps && npm run build
+      cd frontend && npm install --legacy-peer-deps
+      cd frontend && npm install @babel/plugin-proposal-private-property-in-object --save-dev
+      cd frontend && npm run build
       cd ../backend && npm install
     startCommand: cd backend && npm start
     envVars:
