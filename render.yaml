@@ -19,13 +19,9 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
-      - key: CLOUDINARY_CLOUD_NAME
-        sync: false
-      - key: CLOUDINARY_API_KEY
-        sync: false
-      - key: CLOUDINARY_API_SECRET
-        sync: false
-      - key: REACT_APP_TINYMCE_API_KEY
-        value: hbxu9tv200mhj7lsbrce2qkjmni3wx1xsx05v3jzkwb4vcx0
+      - key: FRONTEND_URL
+        value: https://retropulse.onrender.com
+      - key: ALLOWED_ORIGINS
+        value: https://retropulse.onrender.com,https://your-app-name.onrender.com
     healthCheckPath: /api/health
     autoDeploy: true
