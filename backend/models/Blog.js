@@ -53,24 +53,7 @@ const blogSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  canonicalUrl: String,
-  schema: {
-    type: Object,
-    default: function() {
-      return {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        "headline": this.title || '',
-        "image": this.image?.url || '',
-        "author": {
-          "@type": "Person",
-          "name": "Ahmed Mekled"
-        },
-        "datePublished": this.createdAt,
-        "dateModified": this.updatedAt
-      };
-    }
-  }
+  canonicalUrl: String
 }, { 
   timestamps: true,
   toJSON: { virtuals: true },
@@ -93,6 +76,7 @@ blogSchema.pre('save', function(next) {
   // Generate description if not provided
   if (!this.description) {
     this.description = this.content
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
       .substring(0, 157)
       .trim() + '...';
   }

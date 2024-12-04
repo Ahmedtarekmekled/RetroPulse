@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
-    ? process.env.REACT_APP_API_URL 
+    ? 'https://retropulse.onrender.com'
     : 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json'
@@ -17,8 +17,6 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    // Add CORS headers to every request
-    config.headers['Access-Control-Allow-Origin'] = '*';
     return config;
   },
   (error) => {
@@ -26,7 +24,7 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor
+// Add response interceptor with better error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -34,7 +32,7 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
-    return Promise.reject(error);
+    return Promise.reject(error?.response?.data || error);
   }
 );
 

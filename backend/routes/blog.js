@@ -35,12 +35,25 @@ router.get('/count', auth, async (req, res) => {
 router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
     const { title, content } = req.body;
+    
+    // Create blog with required fields
     const blog = new Blog({
       title,
       content,
-      author: req.user.id
+      author: req.user.id,
+      description: content
+        .replace(/<[^>]*>/g, '')
+        .substring(0, 157)
+        .trim() + '...',
+      slug: title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim()
     });
 
+    // Handle image upload
     if (req.file) {
       const b64 = Buffer.from(req.file.buffer).toString('base64');
       const dataURI = `data:${req.file.mimetype};base64,${b64}`;
@@ -49,7 +62,8 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
       });
       blog.image = {
         url: result.secure_url,
-        publicId: result.public_id
+        publicId: result.public_id,
+        alt: title
       };
     }
 
@@ -72,9 +86,17 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
       return res.status(404).json({ message: 'Blog not found' });
     }
 
+    // Update basic fields
     blog.title = title;
     blog.content = content;
+    
+    // Generate description from content
+    blog.description = content
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .substring(0, 157)
+      .trim() + '...';
 
+    // Handle image upload if provided
     if (req.file) {
       if (blog.image?.publicId) {
         await cloudinary.uploader.destroy(blog.image.publicId);
@@ -86,12 +108,17 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
       });
       blog.image = {
         url: result.secure_url,
-        publicId: result.public_id
+        publicId: result.public_id,
+        alt: title
       };
     }
 
+    // Save the updated blog
     await blog.save();
+    
+    // Populate author info before sending response
     await blog.populate('author', 'email username');
+    
     res.json(blog);
   } catch (error) {
     console.error('Error updating blog post:', error);
