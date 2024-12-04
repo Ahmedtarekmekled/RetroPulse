@@ -43,7 +43,9 @@ app.get('/api/health', (req, res) => {
 
 // Middleware
 app.use(cors({
-  origin: '*', // Allow all origins in production temporarily
+  origin: process.env.NODE_ENV === 'production' 
+    ? 'https://your-app-name.onrender.com'
+    : 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

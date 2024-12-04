@@ -1,1 +1,1 @@
-export const TINYMCE_API_KEY = 'hbxu9tv200mhj7lsbrce2qkjmni3wx1xsx05v3jzkwb4vcx0'; 
+export const TINYMCE_API_KEY = process.env.REACT_APP_TINYMCE_API_KEY || 'hbxu9tv200mhj7lsbrce2qkjmni3wx1xsx05v3jzkwb4vcx0'; 

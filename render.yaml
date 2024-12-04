@@ -25,5 +25,7 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
+      - key: REACT_APP_TINYMCE_API_KEY
+        value: hbxu9tv200mhj7lsbrce2qkjmni3wx1xsx05v3jzkwb4vcx0
     healthCheckPath: /api/health
     autoDeploy: true
