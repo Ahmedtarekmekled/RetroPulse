@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import DynamicText from '../components/DynamicText';
 import VisitHistory from '../components/VisitHistory';
+import FaviconManagement from '../components/FaviconManagement';
 
 function Dashboard() {
   const menuItems = [
@@ -45,6 +46,12 @@ function Dashboard() {
       path: '/dashboard/analytics',
       icon: 'fas fa-chart-line',
       description: 'View website analytics and statistics'
+    },
+    {
+      title: 'Favicon',
+      path: '/dashboard/favicon',
+      icon: 'fas fa-icons',
+      description: 'Update website favicon'
     }
   ];
 

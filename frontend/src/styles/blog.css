@@ -40,3 +40,41 @@
   transform: scaleX(1);
   transform-origin: left;
 }
+
+/* TinyMCE Editor Styles */
+.tox-tinymce {
+  border-color: #22c55e !important;
+  background-color: #000 !important;
+}
+
+.tox .tox-toolbar,
+.tox .tox-toolbar__overflow,
+.tox .tox-toolbar__primary {
+  background-color: #111 !important;
+  border-bottom: 1px solid #22c55e !important;
+}
+
+.tox .tox-tbtn {
+  color: #22c55e !important;
+}
+
+.tox .tox-tbtn:hover {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+}
+
+.tox .tox-tbtn--enabled {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+.tox .tox-edit-area__iframe {
+  background-color: #000 !important;
+}
+
+.tox .tox-statusbar {
+  border-color: #22c55e !important;
+  color: #22c55e !important;
+}
+
+.tox .tox-statusbar a {
+  color: #22c55e !important;
+}

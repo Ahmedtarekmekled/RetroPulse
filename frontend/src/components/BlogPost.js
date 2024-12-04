@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import api from '../utils/axios';
 import DynamicText from './DynamicText';
 import HackerBackground from './HackerBackground';
+import BlogEditor from './Editor';
 
 function BlogPost() {
   const { slug } = useParams();
@@ -13,6 +14,8 @@ function BlogPost() {
   const [error, setError] = useState(null);
   const [socialLinks, setSocialLinks] = useState([]);
   const [notificationPermission, setNotificationPermission] = useState(false);
+  const [content, setContent] = useState(post?.content || '');
+  const [saving, setSaving] = useState(false);
 
   // Check notification permission
   useEffect(() => {
@@ -109,6 +112,26 @@ The blog post link has been copied to your clipboard.
     }
   };
 
+  const handleSave = async () => {
+    if (!content.trim()) return;
+
+    try {
+      setSaving(true);
+      const response = await api.put(`/api/blog/${post._id}`, {
+        ...post,
+        content
+      });
+
+      if (setPost) {
+        setPost(response.data);
+      }
+    } catch (error) {
+      console.error('Error saving post:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-green-500 font-mono flex items-center justify-center">
@@ -193,10 +216,33 @@ The blog post link has been copied to your clipboard.
               )}
             </header>
 
-            <div 
-              className="prose prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            <div className="space-y-4">
+              <BlogEditor
+                value={content}
+                onChange={(newContent) => setContent(newContent)}
+              />
+              
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className={`px-4 py-2 border border-green-500 hover:bg-green-500 hover:text-black transition-colors ${
+                    saving ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+
+              {/* Preview section */}
+              <div className="mt-8 border-t border-green-500 pt-4">
+                <h3 className="text-lg font-semibold mb-4">Preview:</h3>
+                <div 
+                  className="prose prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: content }}
+                />
+              </div>
+            </div>
 
             <footer className="mt-8 pt-4 border-t border-green-500">
               <div className="flex items-center justify-between text-sm">

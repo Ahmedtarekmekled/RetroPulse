@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/terminal.css';
+import api from '../utils/axios';
 
 function Terminal() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
   const [input, setInput] = useState('');
   const [output, setOutput] = useState([]);
   const [commandHistory, setCommandHistory] = useState([]);
@@ -12,9 +12,13 @@ function Terminal() {
   const [avatar] = useState(() => {
     return localStorage.getItem('terminalAvatar') || '🤖';
   });
-  const [theme, setTheme] = useState(() => {
+  const [theme] = useState(() => {
     return localStorage.getItem('terminalTheme') || 'matrix';
   });
+  const [socialLinks, setSocialLinks] = useState([]);
+  const [educationInfo, setEducationInfo] = useState([]);
+  const [skillsInfo, setSkillsInfo] = useState([]);
+  const [experienceInfo, setExperienceInfo] = useState([]);
 
   const inputRef = useRef(null);
   const outputRef = useRef(null);
@@ -52,13 +56,37 @@ function Terminal() {
 ${avatar} Terminal v2.0 activated
 ----------------------------------
 Type 'help' to see available commands
-Press Ctrl + \` to toggle terminal
+Press Ctrl + \` to toggle terminal.
       `,
       avatar,
       animate: true
     };
     setOutput([welcomeMessage]);
   };
+
+  // Add this effect to fetch data when terminal is initialized
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [socialRes, aboutRes] = await Promise.all([
+          api.get('/api/social'),
+          api.get('/api/about')
+        ]);
+
+        setSocialLinks(socialRes.data);
+        
+        // Organize about sections
+        const aboutSections = aboutRes.data;
+        setEducationInfo(aboutSections.filter(s => s.section === 'EDUCATION'));
+        setSkillsInfo(aboutSections.filter(s => s.section === 'TECHNICAL_EXPERTISE'));
+        setExperienceInfo(aboutSections.filter(s => s.section === 'CAREER_TIMELINE'));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Define commands object before using it
   const commands = {
@@ -74,13 +102,9 @@ Available commands:
   contact     - Get in touch
   social      - View social links
   clear       - Clear the terminal
-  theme       - Change terminal theme
-  minimize    - Minimize terminal
-  maximize    - Maximize terminal
   skills      - View my technical skills
   experience  - View my work experience
   education   - View my education
-  easteregg   - ???
       `,
       avatar,
       animate: true
@@ -143,7 +167,6 @@ Available commands:
 
     theme: (newTheme) => {
       if (['matrix', 'cyber', 'retro'].includes(newTheme)) {
-        setTheme(newTheme);
         localStorage.setItem('terminalTheme', newTheme);
         return {
           type: 'success',
@@ -160,7 +183,6 @@ Available commands:
     },
 
     minimize: () => {
-      setIsMinimized(true);
       return {
         type: 'success',
         content: 'Terminal minimized',
@@ -170,7 +192,6 @@ Available commands:
     },
 
     maximize: () => {
-      setIsMinimized(false);
       return {
         type: 'success',
         content: 'Terminal maximized',
@@ -179,94 +200,89 @@ Available commands:
       };
     },
 
-    skills: () => ({
-      type: 'info',
-      content: `
-Technical Skills:
-----------------
-Frontend:
-  - React, Vue.js, JavaScript
-  - HTML5, CSS3, Tailwind CSS
-  - TypeScript, Next.js
+    social: () => {
+      if (socialLinks.length === 0) {
+        return {
+          type: 'error',
+          content: 'No social links available.',
+          avatar
+        };
+      }
 
-Backend:
-  - Node.js, Express
-  - Python, Django
-  - RESTful APIs
-
-Database:
-  - MongoDB
-  - PostgreSQL
-  - MySQL
-
-DevOps & Tools:
-  - Git, GitHub
-  - Docker
-  - AWS
-      `,
-      avatar,
-      animate: true
-    }),
-
-    experience: () => ({
-      type: 'info',
-      content: `
-Work Experience:
----------------
-[2023 - Present] Full Stack Developer
-  - Building modern web applications
-  - Leading technical projects
-  - Mentoring junior developers
-
-[2021 - 2023] Frontend Developer
-  - Developed responsive web interfaces
-  - Implemented UI/UX designs
-  - Optimized application performance
-
-[2019 - 2021] Web Developer
-  - Created dynamic websites
-  - Maintained client projects
-  - Collaborated with design team
-      `,
-      avatar,
-      animate: true
-    }),
-
-    education: () => ({
-      type: 'info',
-      content: `
-Education:
-----------
-[2023] Master's in Computer Science
-  - Specialization in Web Technologies
-  - GPA: 3.8/4.0
-
-[2019] Bachelor's in Computer Science
-  - Focus on Software Engineering
-  - GPA: 3.7/4.0
-
-Certifications:
-  - AWS Certified Developer
-  - MongoDB Certified Developer
-  - React Advanced Certification
-      `,
-      avatar,
-      animate: true
-    }),
-
-    social: () => ({
-      type: 'info',
-      content: `
+      return {
+        type: 'info',
+        content: `
 Social Links:
 ------------
-Instagram: @ahmedtm_404
-GitHub:    github.com/yourusername
-LinkedIn:  linkedin.com/in/yourusername
-Twitter:   @yourusername
-      `,
-      avatar,
-      animate: true
-    }),
+${socialLinks.map(link => `${link.platform}: ${link.url}`).join('\n')}
+        `,
+        avatar,
+        animate: true
+      };
+    },
+
+    education: () => {
+      if (educationInfo.length === 0) {
+        return {
+          type: 'error',
+          content: 'Education information not available.',
+          avatar
+        };
+      }
+
+      return {
+        type: 'info',
+        content: `
+Education:
+----------
+${educationInfo.map(edu => edu.content).join('\n------------')}
+        `,
+        avatar,
+        animate: true
+      };
+    },
+
+    skills: () => {
+      if (skillsInfo.length === 0) {
+        return {
+          type: 'error',
+          content: 'Skills information not available.',
+          avatar
+        };
+      }
+
+      return {
+        type: 'info',
+        content: `
+Technical Skills:
+----------------
+${skillsInfo.map(skill => skill.content).join('\n------------')}
+        `,
+        avatar,
+        animate: true
+      };
+    },
+
+    experience: () => {
+      if (experienceInfo.length === 0) {
+        return {
+          type: 'error',
+          content: 'Experience information not available.',
+          avatar
+        };
+      }
+
+      return {
+        type: 'info',
+        content: `
+Work Experience:
+---------------
+${experienceInfo.map(exp => exp.content).join('\n------------')}
+        `,
+        avatar,
+        animate: true
+      };
+    },
 
     easteregg: () => ({
       type: 'special',
@@ -291,6 +307,16 @@ Try the 'matrix' command for a surprise...
         animate: true,
         glitch: true
       };
+    },
+
+    login: () => {
+      handleNavigation('/login');
+      return {
+        type: 'success',
+        content: 'Accessing secure login portal...',
+        avatar,
+        animate: true
+      };
     }
   };
 
@@ -307,12 +333,14 @@ Try the 'matrix' command for a surprise...
             avatar
           }, result]);
         }
-        // Add this: If it's a navigation command, minimize after a short delay
-        if (['home', 'about', 'blog', 'projects', 'contact'].includes(command.toLowerCase())) {
+
+        // Close terminal after a short delay for navigation commands
+        if (['home', 'about', 'blog', 'projects', 'contact', 'login'].includes(command.toLowerCase())) {
           setTimeout(() => {
-            setIsMinimized(true);
-          }, 1000); // Delay to show the success message before minimizing
+            setIsOpen(false);
+          }, 800);
         }
+
         setCommandHistory(prev => [command, ...prev]);
         setHistoryIndex(-1);
       } else {
@@ -401,14 +429,11 @@ Try the 'matrix' command for a surprise...
   // Update the click handler
   const toggleTerminal = () => {
     setIsOpen(prev => !prev);
-    if (!isOpen) {
-      setIsMinimized(false); // Reset minimized state when opening
-    }
   };
 
   // Navigation handler
   const handleNavigation = (path) => {
-    setIsMinimized(true); // Minimize before navigation
+    setIsOpen(false); // Close terminal on navigation
     navigate(path);
   };
 
@@ -441,13 +466,6 @@ Try the 'matrix' command for a surprise...
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsMinimized(!isMinimized);
-                }}
-                className="minimize-button"
-              />
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
                   setIsOpen(false);
                 }}
                 className="close-button"
@@ -455,33 +473,31 @@ Try the 'matrix' command for a surprise...
             </div>
           </div>
 
-          {!isMinimized && (
-            <div className="terminal-content" ref={outputRef}>
-              {output.map((line, i) => (
-                <pre
-                  key={i}
-                  className={`terminal-line ${line.type} ${line.animate ? 'animate' : ''}`}
-                >
-                  {line.avatar && <span className="terminal-avatar">{line.avatar}</span>}
-                  {line.content}
-                </pre>
-              ))}
-              
-              <div className="terminal-input">
-                <span className="terminal-avatar">{avatar}</span>
-                <span className="terminal-prompt">&gt;</span>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={input}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  className="terminal-input-field"
-                  autoFocus
-                />
-              </div>
+          <div className="terminal-content" ref={outputRef}>
+            {output.map((line, i) => (
+              <pre
+                key={i}
+                className={`terminal-line ${line.type} ${line.animate ? 'animate' : ''}`}
+              >
+                {line.avatar && <span className="terminal-avatar">{line.avatar}</span>}
+                {line.content}
+              </pre>
+            ))}
+            
+            <div className="terminal-input">
+              <span className="terminal-avatar">{avatar}</span>
+              <span className="terminal-prompt">&gt;</span>
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="terminal-input-field"
+                autoFocus
+              />
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>

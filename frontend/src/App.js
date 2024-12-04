@@ -20,6 +20,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import BlogPost from './components/BlogPost';
 import NotFound from './pages/NotFound';
 import PrivateRoute from './components/PrivateRoute';
+import FaviconManagement from './components/FaviconManagement';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
                   <Route path="/dashboard/users" element={<UserManagement />} />
                   <Route path="/dashboard/about" element={<AboutManagement />} />
                   <Route path="/dashboard/social" element={<SocialLinksManagement />} />
+                  <Route path="/dashboard/favicon" element={<FaviconManagement />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>

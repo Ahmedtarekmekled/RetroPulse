@@ -23,6 +23,7 @@ const technologiesRoutes = require('./routes/technologies');
 const aboutRoutes = require('./routes/about');
 const socialRoutes = require('./routes/social');
 const analyticsRoutes = require('./routes/analytics');
+const settingsRoutes = require('./routes/settings');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -78,6 +79,7 @@ app.use('/api/technologies', technologiesRoutes);
 app.use('/api/about', aboutRoutes);
 app.use('/api/social', socialRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
