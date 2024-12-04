@@ -1,33 +1,43 @@
-import React, { useState } from 'react';
-import Editor from 'react-editor-js';
+import { useState, useEffect } from 'react';
+import api from '../utils/axios';
+import DynamicText from '../components/DynamicText';
+import { Editor } from '@tinymce/tinymce-react';
+import { TINYMCE_CONFIG } from '../config';
 
 function BlogManagement() {
-  const [editorConfig, setEditorConfig] = useState({
-    apiKey: process.env.REACT_APP_TINYMCE_API_KEY,
-    init: {
-      height: 500,
-      menubar: true,
-      plugins: [
-        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-        'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-      ],
-      toolbar: 'undo redo | blocks | ' +
-        'bold italic forecolor | alignleft aligncenter ' +
-        'alignright alignjustify | bullist numlist outdent indent | ' +
-        'removeformat | help',
-      content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-      document_base_url: process.env.NODE_ENV === 'production' 
-        ? 'https://retropulse.onrender.com'
-        : 'http://localhost:3000'
-    }
+  const [posts, setPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    image: null
   });
 
+  // ... rest of your component code
+
   return (
-    <Editor
-      apiKey={process.env.REACT_APP_TINYMCE_API_KEY}
-      init={editorConfig.init}
-    />
+    <div className="space-y-6">
+      <h1 className="text-2xl font-semibold text-green-500">
+        <DynamicText text="Blog Management" />
+      </h1>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* ... other form fields */}
+        
+        <div className="border border-green-500 p-4">
+          <Editor
+            apiKey={TINYMCE_CONFIG.apiKey}
+            init={TINYMCE_CONFIG.init}
+            value={formData.content}
+            onEditorChange={(content) => setFormData(prev => ({ ...prev, content }))}
+          />
+        </div>
+
+        {/* ... rest of your form */}
+      </form>
+
+      {/* ... rest of your component */}
+    </div>
   );
 }
 
