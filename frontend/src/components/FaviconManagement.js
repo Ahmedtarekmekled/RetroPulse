@@ -7,48 +7,46 @@ function FaviconManagement() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', content: '' });
+  const [error, setError] = useState('');
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.type !== 'image/x-icon' && file.type !== 'image/png' && file.type !== 'image/ico') {
-        setMessage({
-          type: 'error',
-          content: 'Please select a valid icon file (.ico or .png)'
-        });
-        return;
-      }
+    setError('');
+    
+    if (!file) return;
 
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-      setMessage({ type: '', content: '' });
+    if (file.size > 1024 * 1024) {
+      setError('File size must be less than 1MB');
+      return;
     }
+
+    if (!['image/x-icon', 'image/png', 'image/ico'].includes(file.type)) {
+      setError('Only .ico and .png files are allowed');
+      return;
+    }
+
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedFile) {
-      setMessage({
-        type: 'error',
-        content: 'Please select a file first'
-      });
+      setError('Please select a file first');
       return;
     }
 
     setLoading(true);
+    setError('');
+
     const formData = new FormData();
     formData.append('favicon', selectedFile);
 
     try {
-      await api.post('/api/settings/favicon', formData, {
+      const response = await api.post('/api/settings/favicon', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
-      });
-
-      setMessage({
-        type: 'success',
-        content: 'Favicon updated successfully! Please refresh to see changes.'
       });
 
       // Force favicon refresh in browser
@@ -56,17 +54,18 @@ function FaviconManagement() {
       links.forEach(link => {
         const newLink = document.createElement('link');
         newLink.rel = link.rel;
-        newLink.href = `${link.href}?v=${Date.now()}`;
+        newLink.href = `${response.data.path}`;
         document.head.removeChild(link);
         document.head.appendChild(newLink);
       });
 
+      setMessage({
+        type: 'success',
+        content: 'Favicon updated successfully! Please refresh to see changes.'
+      });
     } catch (error) {
       console.error('Error updating favicon:', error);
-      setMessage({
-        type: 'error',
-        content: 'Failed to update favicon. Please try again.'
-      });
+      setError(error.response?.data?.message || 'Failed to update favicon');
     } finally {
       setLoading(false);
     }
@@ -129,13 +128,9 @@ function FaviconManagement() {
             </div>
           )}
 
-          {message.content && (
-            <div className={`p-3 border ${
-              message.type === 'error' 
-                ? 'border-red-500 text-red-500' 
-                : 'border-green-500 text-green-500'
-            }`}>
-              {message.content}
+          {error && (
+            <div className="p-3 border border-red-500 text-red-500">
+              {error}
             </div>
           )}
 

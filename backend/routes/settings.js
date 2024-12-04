@@ -17,9 +17,8 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    // Keep original extension
-    const ext = path.extname(file.originalname);
-    cb(null, `favicon${ext}`);
+    // Always save as favicon.ico
+    cb(null, 'favicon.ico');
   }
 });
 
@@ -28,7 +27,7 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/x-icon', 'image/png', 'image/ico'];
     if (!allowedTypes.includes(file.mimetype)) {
-      cb(new Error('Invalid file type'));
+      cb(new Error('Invalid file type. Only .ico and .png files are allowed.'));
       return;
     }
     cb(null, true);
@@ -39,43 +38,55 @@ const upload = multer({
 });
 
 // Update favicon
-router.post('/favicon', auth, upload.single('favicon'), async (req, res) => {
+router.post('/favicon', auth, async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-    }
-
-    const faviconPath = path.join(__dirname, '../../frontend/public/favicon.ico');
+    const uploadMiddleware = upload.single('favicon');
     
-    // If uploaded file is not .ico, copy it as favicon.ico
-    if (req.file.filename !== 'favicon.ico') {
-      await fs.copyFile(req.file.path, faviconPath);
-      await fs.unlink(req.file.path); // Clean up original file
-    }
+    uploadMiddleware(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({ 
+          message: err.message || 'Error uploading favicon'
+        });
+      }
 
-    // Update manifest.json
-    const manifestPath = path.join(__dirname, '../../frontend/public/manifest.json');
-    try {
-      const manifest = require(manifestPath);
-      manifest.icons = [{
-        src: '/favicon.ico',
-        sizes: '64x64 32x32 24x24 16x16',
-        type: 'image/x-icon'
-      }];
-      
-      await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-    } catch (manifestError) {
-      console.error('Error updating manifest:', manifestError);
-      // Continue even if manifest update fails
-    }
+      if (!req.file) {
+        return res.status(400).json({ 
+          message: 'No file uploaded'
+        });
+      }
 
-    res.json({ 
-      message: 'Favicon updated successfully',
-      path: '/favicon.ico'
+      try {
+        // Update manifest.json
+        const manifestPath = path.join(__dirname, '../../frontend/public/manifest.json');
+        const manifest = require(manifestPath);
+        
+        manifest.icons = [{
+          src: '/favicon.ico',
+          sizes: '64x64 32x32 24x24 16x16',
+          type: 'image/x-icon'
+        }];
+
+        await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+
+        // Force browser cache refresh by adding timestamp
+        const timestamp = Date.now();
+        
+        res.json({ 
+          message: 'Favicon updated successfully',
+          path: `/favicon.ico?v=${timestamp}`
+        });
+      } catch (error) {
+        console.error('Error updating manifest:', error);
+        res.status(500).json({ 
+          message: 'Error updating favicon configuration'
+        });
+      }
     });
   } catch (error) {
-    console.error('Error updating favicon:', error);
-    res.status(500).json({ message: 'Error updating favicon: ' + error.message });
+    console.error('Error handling favicon upload:', error);
+    res.status(500).json({ 
+      message: 'Server error while updating favicon'
+    });
   }
 });
 
