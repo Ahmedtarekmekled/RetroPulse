@@ -23,5 +23,9 @@ services:
         value: https://retropulse.onrender.com
       - key: ALLOWED_ORIGINS
         value: https://retropulse.onrender.com,https://your-app-name.onrender.com
+      - key: REACT_APP_TINYMCE_API_KEY
+        value: hbxu9tv200mhj7lsbrce2qkjmni3wx1xsx05v3jzkwb4vcx0
+      - key: REACT_APP_TINYMCE_DOMAIN
+        value: retropulse.onrender.com
     healthCheckPath: /api/health
     autoDeploy: true
