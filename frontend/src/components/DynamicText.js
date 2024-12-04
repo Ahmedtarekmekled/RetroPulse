@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 
-console.log('DynamicText component loaded');
-
 export const DynamicText = ({ text, initialSize = 'medium', withPoints = false, glitch = false, typewriter = false }) => {
   const [displayText, setDisplayText] = useState('');
   const [isTyping, setIsTyping] = useState(typewriter);

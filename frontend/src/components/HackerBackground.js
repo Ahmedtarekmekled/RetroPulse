@@ -4,7 +4,6 @@ function HackerBackground({ type = 'matrix' }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    console.log('HackerBackground mounted with type:', type);
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     let animationFrameId;
