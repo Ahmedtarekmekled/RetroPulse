@@ -2,7 +2,8 @@
   "name": "portfolio",
   "version": "1.0.0",
   "engines": {
-    "node": "18.x"
+    "node": "18.x",
+    "npm": "9.x"
   },
   "scripts": {
     "start": "node backend/server.js",
