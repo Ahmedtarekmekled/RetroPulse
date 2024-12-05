@@ -2,6 +2,7 @@ const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const fs = require('fs');
 
 // Set strictQuery to false
 mongoose.set('strictQuery', false);
@@ -83,9 +84,27 @@ app.use('/api/settings', settingsRoutes);
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/build')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../frontend/build', 'index.html'));
+  // Serve static files from frontend build
+  const buildPath = path.join(__dirname, '../frontend/build');
+  
+  // Check if build directory exists
+  try {
+    if (fs.existsSync(buildPath)) {
+      app.use(express.static(buildPath));
+      
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(buildPath, 'index.html'));
+      });
+    } else {
+      console.error('Build directory not found:', buildPath);
+    }
+  } catch (err) {
+    console.error('Error checking build directory:', err);
+  }
+} else {
+  // Handle 404 for API routes in development
+  app.use((req, res) => {
+    res.status(404).json({ message: 'API endpoint not found' });
   });
 }
 
@@ -128,10 +147,11 @@ connectDB();
 
 // Error handling
 app.use((err, req, res, next) => {
-  logError(err);
+  console.error(err.stack);
   res.status(500).json({ 
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: process.env.NODE_ENV === 'production' 
+      ? 'Internal Server Error' 
+      : err.message 
   });
 });
 
