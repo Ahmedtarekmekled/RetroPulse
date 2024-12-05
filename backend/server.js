@@ -169,9 +169,8 @@ app.use(enforceHttps);
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'https://retropulse.onrender.com',
+      'https://your-vercel-domain.vercel.app',
       'https://ahmedmakled.com',
-      'https://www.ahmedmakled.com',
       'http://localhost:3000'
     ];
     
@@ -183,8 +182,7 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
 
 app.use(cors(corsOptions));
