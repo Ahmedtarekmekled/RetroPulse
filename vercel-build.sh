@@ -1,4 +1,7 @@
 #!/bin/bash
+echo "Setting up npm version..."
+npm install -g npm@8.19.2
+
 echo "Installing dependencies..."
 npm install
 
