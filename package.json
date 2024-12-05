@@ -5,11 +5,8 @@
     "node": "18.17.0"
   },
   "scripts": {
-    "start": "cd backend && node server.js",
-    "build": "npm install && cd frontend && npm install --legacy-peer-deps && npm run build && cd ../backend && npm install",
-    "postinstall": "cd backend && npm install"
-  },
-  "overrides": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "start": "node backend/server.js",
+    "build": "cd frontend && npm install --legacy-peer-deps && npm run build && cd ../backend && npm install",
+    "vercel-build": "npm run build"
   }
 }

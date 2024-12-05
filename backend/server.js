@@ -167,19 +167,9 @@ app.use(enforceHttps);
 
 // Update CORS configuration
 const corsOptions = {
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://your-vercel-domain.vercel.app',
-      'https://ahmedmakled.com',
-      'http://localhost:3000'
-    ];
-    
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: process.env.NODE_ENV === 'production' 
+    ? false 
+    : 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
