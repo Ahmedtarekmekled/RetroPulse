@@ -119,34 +119,35 @@ const server = app.listen(PORT, () => {
 // MongoDB Connection
 const connectDB = async () => {
   try {
-    // Ensure MONGODB_URI starts with mongodb:// or mongodb+srv://
     const mongoURI = process.env.MONGODB_URI;
     if (!mongoURI) {
-      throw new Error('MONGODB_URI is not defined in environment variables');
-    }
-    
-    if (!mongoURI.startsWith('mongodb://') && !mongoURI.startsWith('mongodb+srv://')) {
-      throw new Error('Invalid MongoDB URI format. URI must start with mongodb:// or mongodb+srv://');
+      throw new Error('MONGODB_URI is not defined');
     }
 
     await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
     });
-    console.log('MongoDB Connected');
+
+    console.log('MongoDB Connected Successfully');
+    
+    // Test the connection
+    const collections = await mongoose.connection.db.collections();
+    console.log('Available collections:', collections.map(c => c.collectionName));
+    
   } catch (error) {
-    console.error('MongoDB connection error:', error.message);
-    // Log additional details for debugging
+    console.error('MongoDB connection error:', error);
+    // Log more details in development
     if (process.env.NODE_ENV !== 'production') {
       console.error('Full error:', error);
     }
-    // Don't exit process on failed connection
   }
 };
 
-connectDB();
+// Call connectDB and handle errors
+connectDB().catch(console.error);
 
 // Error handling
 app.use((err, req, res, next) => {
@@ -190,29 +191,95 @@ app.use(enforceHttps);
 
 // Update CORS configuration
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://retropulse.onrender.com']
-    : ['http://localhost:3000'],
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'https://retropulse.onrender.com',
+      'https://ahmedmakled.com',
+      'https://www.ahmedmakled.com',
+      'http://localhost:3000'
+    ];
+    
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
 };
 
 app.use(cors(corsOptions));
 
 // Add security headers
 app.use((req, res, next) => {
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
   next();
 });
+
+// Move this before your routes
+app.options('*', cors(corsOptions));
 
 // Force HTTPS
 app.use((req, res, next) => {
   if (process.env.NODE_ENV === 'production' && !req.secure && req.get('x-forwarded-proto') !== 'https') {
     return res.redirect('https://' + req.get('host') + req.url);
   }
+  next();
+});
+
+// Add this before your routes
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
+
+// Add this after your routes
+app.use((err, req, res, next) => {
+  console.error('Error:', {
+    message: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+  
+  res.status(err.status || 500).json({
+    message: process.env.NODE_ENV === 'production' 
+      ? 'Internal Server Error' 
+      : err.message,
+    path: req.path,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Add this near your other security headers
+app.use((req, res, next) => {
+  // Force HTTPS
+  if (process.env.NODE_ENV === 'production' && !req.secure) {
+    const secureUrl = `https://${req.headers.host}${req.url}`;
+    return res.redirect(301, secureUrl);
+  }
+
+  // HSTS header
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  
+  // Prevent clickjacking
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  
+  // XSS protection
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // Prevent MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  
   next();
 });

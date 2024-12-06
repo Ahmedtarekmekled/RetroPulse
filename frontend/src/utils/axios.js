@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: process.env.NODE_ENV === 'production' 
+    ? 'https://ahmedmakled.com/api'  // In production, use your domain
+    : 'http://localhost:5000/api', // In development, use localhost
   headers: {
     'Content-Type': 'application/json'
   },
@@ -11,6 +13,10 @@ const api = axios.create({
 // Add request interceptor
 api.interceptors.request.use(
   (config) => {
+    // Add CORS headers to every request
+    config.headers['Access-Control-Allow-Origin'] = window.location.origin;
+    config.headers['Access-Control-Allow-Credentials'] = 'true';
+    
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -26,6 +32,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('API Error:', error);
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
