@@ -85,15 +85,25 @@ app.use('/api/settings', settingsRoutes);
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   // Serve static files from frontend build
-  const buildPath = path.join(process.cwd(), 'frontend', 'build');
+  const buildPath = path.join(__dirname, '../frontend/build');
   
-  app.use(express.static(buildPath));
-  
-  app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api/')) {
-      res.sendFile(path.join(buildPath, 'index.html'));
+  try {
+    // Check if build directory exists
+    if (fs.existsSync(buildPath)) {
+      app.use(express.static(buildPath));
+      
+      app.get('*', (req, res) => {
+        // Don't serve index.html for API routes
+        if (!req.path.startsWith('/api/')) {
+          res.sendFile(path.join(buildPath, 'index.html'));
+        }
+      });
+    } else {
+      console.error('Build directory not found:', buildPath);
     }
-  });
+  } catch (err) {
+    console.error('Error checking build directory:', err);
+  }
 } else {
   // Handle 404 for API routes in development
   app.use((req, res) => {

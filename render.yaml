@@ -3,7 +3,13 @@ services:
     name: retropulse
     env: node
     region: frankfurt
-    buildCommand: npm run render-build
+    buildCommand: |
+      npm install
+      cd frontend && npm install --legacy-peer-deps && npm run build
+      cd ../backend && npm install
+      # Ensure build directory exists in the correct location
+      mkdir -p frontend/build
+      cp -r ../frontend/build ./frontend/
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
