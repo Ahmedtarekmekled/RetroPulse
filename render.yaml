@@ -1,16 +1,11 @@
 services:
   - type: web
-    name: portfolio-mern
+    name: retropulse
     env: node
     region: frankfurt
-    buildCommand: |
-      npm install
-      cd frontend && npm install --legacy-peer-deps && npm run build
-      cd ../backend && npm install
+    buildCommand: npm run render-build
     startCommand: cd backend && npm start
     envVars:
-      - key: NODE_VERSION
-        value: 18.17.0
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -19,13 +14,15 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
       - key: FRONTEND_URL
         value: https://retropulse.onrender.com
       - key: ALLOWED_ORIGINS
-        value: https://retropulse.onrender.com,https://your-app-name.onrender.com
-      - key: REACT_APP_TINYMCE_API_KEY
-        value: hbxu9tv200mhj7lsbrce2qkjmni3wx1xsx05v3jzkwb4vcx0
-      - key: REACT_APP_TINYMCE_DOMAIN
-        value: retropulse.onrender.com
+        value: https://retropulse.onrender.com
     healthCheckPath: /api/health
     autoDeploy: true

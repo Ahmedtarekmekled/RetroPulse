@@ -6,7 +6,10 @@
   },
   "scripts": {
     "start": "node backend/server.js",
-    "build": "cd frontend && npm install --legacy-peer-deps && npm run build",
-    "vercel-build": "npm run build"
+    "build": "cd frontend && npm install --legacy-peer-deps && npm run build && cd ../backend && npm install",
+    "render-build": "npm run build"
+  },
+  "dependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }
