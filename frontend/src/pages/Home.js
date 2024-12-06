@@ -46,7 +46,6 @@ function Home() {
 
     type();
 
-    // Cursor blink effect
     const cursorInterval = setInterval(() => {
       setShowCursor(prev => !prev);
     }, 530);
@@ -121,11 +120,11 @@ function Home() {
       {/* Main content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
         {/* Glitch effect container */}
-        <div className="glitch-container mb-8">
+        <div className="glitch-container mb-8 min-h-[120px]">
           <h1 className="text-4xl md:text-6xl font-bold glitch-text mb-4">
-            <DynamicText text="AHMED MEKLED" glitch={true} />
+            <DynamicText text="TERMINAL" glitch={true} />
           </h1>
-          <div className="text-xl md:text-2xl text-green-400 mb-8">
+          <div className="text-xl md:text-2xl text-green-400 mb-8 min-h-[32px]">
             {glitchText}{showCursor ? '_' : ' '}
           </div>
         </div>
@@ -133,7 +132,7 @@ function Home() {
         {/* Command menu */}
         <div className="border border-green-500 p-6 max-w-md w-full bg-black bg-opacity-90 backdrop-blur-sm">
           <div className="mb-4 flex justify-between items-center">
-            <span>root@portfolio:~#</span>
+            <span>root@terminal:~#</span>
             <span className="text-sm">{new Date().toLocaleString()}</span>
           </div>
 
@@ -161,18 +160,17 @@ function Home() {
             <i className="fab fa-instagram mr-2"></i>
             @ahmedtm_404
           </a>
-          {/* Add other social links here */}
         </div>
 
         {/* ASCII art */}
         <div className="mt-8 text-xs">
           <pre className="text-green-500">
 {`
-    _    _                           _ 
-   / \\  | |__  _ __ ___   ___  __| |
-  / _ \\ | '_ \\| '_ \` _ \\ / _ \\/ _\` |
- / ___ \\| | | | | | | | |  __/ (_| |
-/_/   \\_\\_| |_|_| |_| |_|\\___|\\__,_|
+    _____                    _             _ 
+   |_   _|__ _ __ _ __ ___ (_)_ __   __ _| |
+     | |/ _ \\ '__| '_ \` _ \\| | '_ \\ / _\` | |
+     | |  __/ |  | | | | | | | | | | (_| | |
+     |_|\\___|_|  |_| |_| |_|_|_| |_|\\__,_|_|
 `}
           </pre>
         </div>
