@@ -7,4 +7,4 @@ Disallow: /login
 Disallow: /admin
 
 # Sitemap
-Sitemap: https://yourdomain.com/sitemap.xml 
+Sitemap: https://ahmedmakled.com/sitemap.xml 

@@ -13,6 +13,10 @@ const api = axios.create({
 // Add request interceptor
 api.interceptors.request.use(
   (config) => {
+    // Add CORS headers to every request
+    config.headers['Access-Control-Allow-Origin'] = window.location.origin;
+    config.headers['Access-Control-Allow-Credentials'] = 'true';
+    
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
