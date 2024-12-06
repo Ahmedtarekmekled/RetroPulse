@@ -2,8 +2,8 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
-    ? 'https://ahmedmakled.com/api'  // In production, use your domain
-    : 'http://localhost:5000/api', // In development, use localhost
+    ? '/api'  // Use relative path to avoid CORS issues
+    : 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json'
   },
@@ -13,9 +13,10 @@ const api = axios.create({
 // Add request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add CORS headers to every request
-    config.headers['Access-Control-Allow-Origin'] = window.location.origin;
-    config.headers['Access-Control-Allow-Credentials'] = 'true';
+    // Remove duplicate /api in URL if it exists
+    if (config.url?.startsWith('/api')) {
+      config.url = config.url.replace('/api', '');
+    }
     
     const token = localStorage.getItem('token');
     if (token) {
@@ -28,7 +29,7 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor with better error handling
+// Add response interceptor
 api.interceptors.response.use(
   (response) => response,
   (error) => {

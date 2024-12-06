@@ -26,12 +26,18 @@ services:
       - key: FRONTEND_URL
         value: https://ahmedmakled.com
       - key: ALLOWED_ORIGINS
-        value: https://ahmedmakled.com,https://www.ahmedmakled.com,https://retropulse.onrender.com
+        value: https://ahmedmakled.com,https://www.ahmedmakled.com
       - key: DEBUG
         value: "app:*"
-      - key: NODE_OPTIONS
-        value: "--max-old-space-size=1024"
-      - key: TZ
-        value: "UTC"
+    headers:
+      - path: /*
+        name: Access-Control-Allow-Origin
+        value: https://ahmedmakled.com, https://www.ahmedmakled.com
+      - path: /*
+        name: Access-Control-Allow-Methods
+        value: GET,POST,PUT,DELETE,PATCH,OPTIONS
+      - path: /*
+        name: Access-Control-Allow-Headers
+        value: Origin,Content-Type,Accept,Authorization
     healthCheckPath: /api/health
     autoDeploy: true

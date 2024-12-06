@@ -193,7 +193,6 @@ app.use(enforceHttps);
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'https://retropulse.onrender.com',
       'https://ahmedmakled.com',
       'https://www.ahmedmakled.com',
       'http://localhost:3000'
@@ -202,21 +201,29 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log('Origin not allowed:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
 
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
 // Add security headers
 app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && corsOptions.origin(origin, () => true)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
@@ -224,9 +231,6 @@ app.use((req, res, next) => {
   );
   next();
 });
-
-// Move this before your routes
-app.options('*', cors(corsOptions));
 
 // Force HTTPS
 app.use((req, res, next) => {
